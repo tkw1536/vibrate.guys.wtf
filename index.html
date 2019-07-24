@@ -35,10 +35,11 @@ var MORSE_WORD = 7 * MORSE_UNIT; // space between different words
  * @param {number[]} duration Vibration pattern
  */
 function startPersistentVibrate(duration) {
-    // add up the overall time and add a buffer
-    var interval = MORSE_WORD;
+    // add up the overall time and then remove the last element (which is just a pause
+    var interval = 0;
     duration.forEach(function(e) { interval += e; });
-
+    duration.pop();
+    
     // start vibrating and repeat
     setInterval(function() {
         navigator.vibrate(duration);
