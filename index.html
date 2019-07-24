@@ -3,24 +3,24 @@
 <script>
 window.onload = function() {
     // pointers to all the elements
-    var $div = document.getElementsByTagName('div')[0];
+    var $body = document.getElementsByTagName("body")[0];
+    var $div = document.getElementsByTagName('div')[0]
 
-    // read out the text we want to vibrate
-    var text = decodeURIComponent(location.search.substr(1) || "SOS");
+    $body.addEventListener('click', function(){
+        // read out the text we want to vibrate
+        var text = decodeURIComponent(location.search.substr(1) || "SOS");
 
-    // check if we can vibrate
-    if (!navigator || typeof navigator.vibrate !== 'function') {
-        $div.style.color = "red";
-        $div.textContent = "Unable to vibrate";
-        return;
-    }
+        // and morse
+        startPersistentVibrate(toMorseCode(text), function(){
+            $div.style.color = "yellow";
+            $div.textContent = "Vibrating";
+        }, function(supported){
+            $div.style.color = "red";
+            $div.textContent = supported ? "Vibration Failed" : "Vibration is not supported by your browser";
+        });
+    });
 
-    // set text 
-    $div.style.color = "yellow";
-    $div.textContent = "Morsing ...";
-
-    // and morse
-    startPersistentVibrate(toMorseCode(text));
+    $div.textContent = 'Click to vibrate';
 }
 
 var MORSE_UNIT = 100; // unit for everything else
@@ -33,15 +33,29 @@ var MORSE_WORD = 7 * MORSE_UNIT; // space between different words
 /**
  * Starts a persistent (repeating) vibration
  * @param {number[]} duration Vibration pattern
+ * @param {function} onSuccess Function called on success
+ * @param {function} onFailure Function called on failure
  */
-function startPersistentVibrate(duration) {
+function startPersistentVibrate(duration, onSuccess, onFailure) {
     // add up the overall time and then remove the last element (which is just a pause
     var interval = 0;
     duration.forEach(function(e) { interval += e; });
     duration.pop();
 
-    // start vibration now
-    navigator.vibrate(duration);
+    // check if we can vibrate
+    if (!navigator || typeof navigator.vibrate !== 'function') {
+        onFailure(false);
+        return;
+    }
+
+    // start vibration now or bail out
+    if (!navigator.vibrate(duration)) {
+        onFailure(true);
+        return;
+    }
+    
+    // mark success
+    onSuccess();
     
     // schedule repetition
     setInterval(function() {
@@ -93,6 +107,6 @@ function toMorseCode(string) {
 </script>
 <title>Vibrate</title>
 <div style="color:white; width: 200px; margin-left: auto; margin-right: auto;">
-    Loading ...
+    Loading
 </div>
 </html>
