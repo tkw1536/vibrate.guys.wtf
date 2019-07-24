@@ -39,8 +39,11 @@ function startPersistentVibrate(duration) {
     var interval = 0;
     duration.forEach(function(e) { interval += e; });
     duration.pop();
+
+    // start vibration now
+    navigator.vibrate(duration);
     
-    // start vibrating and repeat
+    // schedule repetition
     setInterval(function() {
         navigator.vibrate(duration);
     }, interval);
