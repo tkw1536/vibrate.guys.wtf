@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang=en style=background:#000>
+<script>
+window.onload = function() {
+    // pointers to all the elements
+    var $div = document.getElementsByTagName('div')[0];
+
+    // read out the text we want to vibrate
+    var text = decodeURIComponent(location.search.substr(1) || "SOS");
+
+    // check if we can vibrate
+    if (!navigator || typeof navigator.vibrate !== 'function') {
+        $div.style.color = "red";
+        $div.textContent = "Unable to vibrate";
+        return;
+    }
+
+    // set text 
+    $div.style.color = "yellow";
+    $div.textContent = "Morsing ...";
+
+    // and morse
+    startPersistentVibrate(toMorseCode(text));
+}
+
+var MORSE_UNIT = 100; // unit for everything else
+var MORSE_DIT = 1 * MORSE_UNIT; // time for a '.'
+var MORSE_DAH = 3 * MORSE_UNIT; // time for a '-'
+var MORSE_INTRA_CHARACTER = MORSE_UNIT; // time between different dits and dahs of a single character
+var MORSE_INTER_CHARACTER = 3 * MORSE_UNIT; // time between different characters
+var MORSE_WORD = 7 * MORSE_UNIT; // space between different words
+
+/**
+ * Starts a persistent (repeating) vibration
+ * @param {number[]} duration Vibration pattern
+ */
+function startPersistentVibrate(duration) {
+    // add up the overall time and add a buffer
+    var interval = MORSE_WORD;
+    duration.forEach(function(e) { interval += e; });
+
+    // start vibrating and repeat
+    setInterval(function() {
+        navigator.vibrate(duration);
+    }, interval);
+}
+
+var MORSE_ALPHABET = {
+    'a': '.-',    'b': '-...',  'c': '-.-.', 'd': '-..',
+    'e': '.',     'f': '..-.',  'g': '--.',  'h': '....',
+    'i': '..',    'j': '.---',  'k': '-.-',  'l': '.-..',
+    'm': '--',    'n': '-.',    'o': '---',  'p': '.--.',
+    'q': '--.-',  'r': '.-.',   's': '...',  't': '-',
+    'u': '..-',   'v': '...-',  'w': '.--',  'x': '-..-',
+    'y': '-.--',  'z': '--..',  ' ': '/',
+    '1': '.----', '2': '..---', '3': '...--', '4': '....-', 
+    '5': '.....', '6': '-....', '7': '--...', '8': '---..', 
+    '9': '----.', '0': '-----', 
+}
+
+function toMorseCode(string) {
+    // the morse code containing all elements
+    var code = [];
+
+    // iterate over each character
+    Array.from(string).forEach(function(c) {
+        // load how this character is represented
+        var l = MORSE_ALPHABET[c.toLowerCase()];
+        
+        // if we can't find the character
+        // use it as a space between words
+        if (!l) {
+            if (code.length > 0) { // if we didn't have anything before, we don't set anything
+                code[code.length - 1] = MORSE_WORD; 
+            }
+            return;
+        }
+
+        // send each part of a character
+        Array.from(l).forEach(function(c){
+            code = code.concat([c === '.' ? MORSE_DIT : MORSE_DAH, MORSE_INTRA_CHARACTER]);
+        });
+        // pause after a character
+        code[code.length - 1] = MORSE_INTER_CHARACTER;
+    });
+
+    return code;
+}
+</script>
+<title>Vibrate</title>
+<div style="color:white; width: 200px; margin-left: auto; margin-right: auto;">
+    Loading ...
+</div>
+</html>
