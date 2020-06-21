@@ -1,121 +1,133 @@
 <!DOCTYPE html>
 <html lang=en style=background:#000>
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-159220391-7"></script>
+<!-- Tracking -->
+<script async src="https://track.everyone.wtf/tracker.js" data-ackee-server="https://track.everyone.wtf" data-ackee-domain-id="97a0f8aa-ce93-4d6a-803e-ed09be0a093e"></script>
+
+<style>
+    .legal {
+        color: white;
+        position: absolute;
+        margin-bottom: 5px;
+        margin-right: 5px;
+        bottom: 0;
+        right: 0;
+    }
+
+    .legal>a {
+        color: blue;
+    }
+</style>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    window.onload = function () {
+        // pointers to all the elements
+        var $body = document.getElementsByTagName("body")[0];
+        var $div = document.getElementsByTagName('div')[0]
 
-  gtag('config', 'UA-159220391-7');
-</script>
-<script>
-window.onload = function() {
-    // pointers to all the elements
-    var $body = document.getElementsByTagName("body")[0];
-    var $div = document.getElementsByTagName('div')[0]
+        $body.addEventListener('click', function () {
+            // read out the text we want to vibrate
+            var text = decodeURIComponent(location.search.substr(1) || "SOS");
 
-    $body.addEventListener('click', function(){
-        // read out the text we want to vibrate
-        var text = decodeURIComponent(location.search.substr(1) || "SOS");
-
-        // and morse
-        startPersistentVibrate(toMorseCode(text), function(){
-            $div.style.color = "yellow";
-            $div.textContent = "Vibrating";
-        }, function(supported){
-            $div.style.color = "red";
-            $div.textContent = supported ? "Vibration Failed" : "Vibration is not supported by your browser";
+            // and morse
+            startPersistentVibrate(toMorseCode(text), function () {
+                $div.style.color = "yellow";
+                $div.textContent = "Vibrating";
+            }, function (supported) {
+                $div.style.color = "red";
+                $div.textContent = supported ? "Vibration Failed" : "Vibration is not supported by your browser";
+            });
         });
-    });
 
-    $div.textContent = 'Click to vibrate';
-}
-
-var MORSE_UNIT = 100; // unit for everything else
-var MORSE_DIT = 1 * MORSE_UNIT; // time for a '.'
-var MORSE_DAH = 3 * MORSE_UNIT; // time for a '-'
-var MORSE_INTRA_CHARACTER = MORSE_UNIT; // time between different dits and dahs of a single character
-var MORSE_INTER_CHARACTER = 3 * MORSE_UNIT; // time between different characters
-var MORSE_WORD = 7 * MORSE_UNIT; // space between different words
-
-/**
- * Starts a persistent (repeating) vibration
- * @param {number[]} duration Vibration pattern
- * @param {function} onSuccess Function called on success
- * @param {function} onFailure Function called on failure
- */
-function startPersistentVibrate(duration, onSuccess, onFailure) {
-    // add up the overall time and then remove the last element (which is just a pause
-    var interval = 0;
-    duration.forEach(function(e) { interval += e; });
-    duration.pop();
-
-    // check if we can vibrate
-    if (!navigator || typeof navigator.vibrate !== 'function') {
-        onFailure(false);
-        return;
+        $div.textContent = 'Click to vibrate';
     }
 
-    // start vibration now or bail out
-    if (!navigator.vibrate(duration)) {
-        onFailure(true);
-        return;
-    }
-    
-    // mark success
-    onSuccess();
-    
-    // schedule repetition
-    setInterval(function() {
-        navigator.vibrate(duration);
-    }, interval);
-}
+    var MORSE_UNIT = 100; // unit for everything else
+    var MORSE_DIT = 1 * MORSE_UNIT; // time for a '.'
+    var MORSE_DAH = 3 * MORSE_UNIT; // time for a '-'
+    var MORSE_INTRA_CHARACTER = MORSE_UNIT; // time between different dits and dahs of a single character
+    var MORSE_INTER_CHARACTER = 3 * MORSE_UNIT; // time between different characters
+    var MORSE_WORD = 7 * MORSE_UNIT; // space between different words
 
-var MORSE_ALPHABET = {
-    'a': '.-',    'b': '-...',  'c': '-.-.', 'd': '-..',
-    'e': '.',     'f': '..-.',  'g': '--.',  'h': '....',
-    'i': '..',    'j': '.---',  'k': '-.-',  'l': '.-..',
-    'm': '--',    'n': '-.',    'o': '---',  'p': '.--.',
-    'q': '--.-',  'r': '.-.',   's': '...',  't': '-',
-    'u': '..-',   'v': '...-',  'w': '.--',  'x': '-..-',
-    'y': '-.--',  'z': '--..',  ' ': '/',
-    '1': '.----', '2': '..---', '3': '...--', '4': '....-', 
-    '5': '.....', '6': '-....', '7': '--...', '8': '---..', 
-    '9': '----.', '0': '-----', 
-}
+    /**
+     * Starts a persistent (repeating) vibration
+     * @param {number[]} duration Vibration pattern
+     * @param {function} onSuccess Function called on success
+     * @param {function} onFailure Function called on failure
+     */
+    function startPersistentVibrate(duration, onSuccess, onFailure) {
+        // add up the overall time and then remove the last element (which is just a pause
+        var interval = 0;
+        duration.forEach(function (e) { interval += e; });
+        duration.pop();
 
-function toMorseCode(string) {
-    // the morse code containing all elements
-    var code = [];
-
-    // iterate over each character
-    Array.from(string).forEach(function(c) {
-        // load how this character is represented
-        var l = MORSE_ALPHABET[c.toLowerCase()];
-        
-        // if we can't find the character
-        // use it as a space between words
-        if (!l) {
-            if (code.length > 0) { // if we didn't have anything before, we don't set anything
-                code[code.length - 1] = MORSE_WORD; 
-            }
+        // check if we can vibrate
+        if (!navigator || typeof navigator.vibrate !== 'function') {
+            onFailure(false);
             return;
         }
 
-        // send each part of a character
-        Array.from(l).forEach(function(c){
-            code = code.concat([c === '.' ? MORSE_DIT : MORSE_DAH, MORSE_INTRA_CHARACTER]);
-        });
-        // pause after a character
-        code[code.length - 1] = MORSE_INTER_CHARACTER;
-    });
+        // start vibration now or bail out
+        if (!navigator.vibrate(duration)) {
+            onFailure(true);
+            return;
+        }
 
-    return code;
-}
+        // mark success
+        onSuccess();
+
+        // schedule repetition
+        setInterval(function () {
+            navigator.vibrate(duration);
+        }, interval);
+    }
+
+    var MORSE_ALPHABET = {
+        'a': '.-', 'b': '-...', 'c': '-.-.', 'd': '-..',
+        'e': '.', 'f': '..-.', 'g': '--.', 'h': '....',
+        'i': '..', 'j': '.---', 'k': '-.-', 'l': '.-..',
+        'm': '--', 'n': '-.', 'o': '---', 'p': '.--.',
+        'q': '--.-', 'r': '.-.', 's': '...', 't': '-',
+        'u': '..-', 'v': '...-', 'w': '.--', 'x': '-..-',
+        'y': '-.--', 'z': '--..', ' ': '/',
+        '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+        '5': '.....', '6': '-....', '7': '--...', '8': '---..',
+        '9': '----.', '0': '-----',
+    }
+
+    function toMorseCode(string) {
+        // the morse code containing all elements
+        var code = [];
+
+        // iterate over each character
+        Array.from(string).forEach(function (c) {
+            // load how this character is represented
+            var l = MORSE_ALPHABET[c.toLowerCase()];
+
+            // if we can't find the character
+            // use it as a space between words
+            if (!l) {
+                if (code.length > 0) { // if we didn't have anything before, we don't set anything
+                    code[code.length - 1] = MORSE_WORD;
+                }
+                return;
+            }
+
+            // send each part of a character
+            Array.from(l).forEach(function (c) {
+                code = code.concat([c === '.' ? MORSE_DIT : MORSE_DAH, MORSE_INTRA_CHARACTER]);
+            });
+            // pause after a character
+            code[code.length - 1] = MORSE_INTER_CHARACTER;
+        });
+
+        return code;
+    }
 </script>
 <title>Vibrate</title>
 <div style="color:white; width: 200px; margin-left: auto; margin-right: auto;">
     Loading
 </div>
+<small class='legal'>
+    For legal reasons I must also link <a href="https://inform.everyone.wtf/" target="_blank">my Privacy Policy and Imprint</a>.
+</small>
+
 </html>
